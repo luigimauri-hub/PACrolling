@@ -48,6 +48,17 @@
         .info-box strong {
             color: #2980b9;
         }
+        .explain-box {
+            background: #fef9e7;
+            border-left: 6px solid #f39c12;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            font-size: 0.95em;
+        }
+        .explain-box strong {
+            color: #e67e22;
+        }
         .controls-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -287,70 +298,22 @@
 </head>
 <body>
     <div class="container">
-        <h1>📊 SIMULATORE PAC/PIC - MSCI WORLD</h1>
-        <div class="subtitle">Analisi storica dei rendimenti dal Gen 1979 al Gen 2026</div>
+        <h1>📊 SIMULATORE PAC/PIC ROLLING - MSCI WORLD</h1>
+        <div class="subtitle">Analisi storica dei rendimenti dal 1979 al 2026</div>
         
         <!-- Info MSCI World -->
         <div class="info-box">
-            <strong>🌍 Cos'è MSCI World EUR?</strong> È un indice azionario globale che rappresenta circa 1.600 società di 23 paesi sviluppati (USA, Europa, Giappone, Canada, ecc.).  
+            <strong>🌍 Cos'è MSCI World EUR?</strong> È un indice di mercato azionario costituito da  circa 1.600 società di 23 paesi sviluppati (USA, Europa, Giappone, Canada, ecc.). È sostenuto dalla MSCI, ex Morgan Stanley Capital International ed è usato come riferimento (benchmark) per i fondi azionari di tipo "world" (mondiali) o "global" (globali).
+        </div>
+        
+        <!-- Spiegazione Analisi Rolling -->
+        <div class="explain-box">
+            <strong>🔄 Cos'è l'analisi rolling?</strong> L'analisi rolling (o a finestre mobili) calcola i rendimenti per TUTTI i possibili periodi di investimento della durata selezionata. Ad esempio, con durata 5 anni, il simulatore calcola il rendimento per ogni periodo quinquennale dal 1979 al 2026: 1979-1984, 1980-1985, 1981-1986, e così via. Questo permette di vedere come i rendimenti sono variati a seconda del momento in cui si è iniziato a investire, mostrando il miglior e peggior momento storico.
+        </div>
         
         <div class="controls-grid">
             <div class="control-group">
-                <label>📅 Data Inizio</label>
-                <select id="startDate">
-                    <option value="0">Gen 1979</option>
-                    <option value="12">Gen 1980</option>
-                    <option value="24">Gen 1981</option>
-                    <option value="36">Gen 1982</option>
-                    <option value="48">Gen 1983</option>
-                    <option value="60">Gen 1984</option>
-                    <option value="72">Gen 1985</option>
-                    <option value="84">Gen 1986</option>
-                    <option value="96">Gen 1987</option>
-                    <option value="108">Gen 1988</option>
-                    <option value="120">Gen 1989</option>
-                    <option value="132">Gen 1990</option>
-                    <option value="144">Gen 1991</option>
-                    <option value="156">Gen 1992</option>
-                    <option value="168">Gen 1993</option>
-                    <option value="180">Gen 1994</option>
-                    <option value="192">Gen 1995</option>
-                    <option value="204">Gen 1996</option>
-                    <option value="216">Gen 1997</option>
-                    <option value="228">Gen 1998</option>
-                    <option value="240">Gen 1999</option>
-                    <option value="252">Gen 2000</option>
-                    <option value="264">Gen 2001</option>
-                    <option value="276">Gen 2002</option>
-                    <option value="288">Gen 2003</option>
-                    <option value="300">Gen 2004</option>
-                    <option value="312">Gen 2005</option>
-                    <option value="324">Gen 2006</option>
-                    <option value="336">Gen 2007</option>
-                    <option value="348">Gen 2008</option>
-                    <option value="360">Gen 2009</option>
-                    <option value="372">Gen 2010</option>
-                    <option value="384">Gen 2011</option>
-                    <option value="396">Gen 2012</option>
-                    <option value="408">Gen 2013</option>
-                    <option value="420">Gen 2014</option>
-                    <option value="432">Gen 2015</option>
-                    <option value="444">Gen 2016</option>
-                    <option value="456">Gen 2017</option>
-                    <option value="468">Gen 2018</option>
-                    <option value="480">Gen 2019</option>
-                    <option value="492">Gen 2020</option>
-                    <option value="504">Gen 2021</option>
-                    <option value="516">Gen 2022</option>
-                    <option value="528">Gen 2023</option>
-                    <option value="540">Gen 2024</option>
-                    <option value="552">Gen 2025</option>
-                    <option value="564">Gen 2026</option>
-                </select>
-            </div>
-            
-            <div class="control-group">
-                <label>⏱️ Durata: <span id="durationValue">5</span> anni</label>
+                <label>⏱️ Durata Investimento: <span id="durationValue">5</span> anni</label>
                 <input type="range" id="duration" min="1" max="20" value="5" step="0.5">
             </div>
             
@@ -363,9 +326,9 @@
             </div>
             
             <div class="control-group">
-                <label>📊 Mostra</label>
+                <label>📊 Mostra nella tabella</label>
                 <select id="displayType">
-                    <option value="all">Tutti i periodi</option>
+                    <option value="all">Tutti i periodi (primi 20)</option>
                     <option value="best">Top 10 migliori</option>
                     <option value="worst">Top 10 peggiori</option>
                 </select>
@@ -489,6 +452,7 @@
             <p><strong>⚠️ DISCLAIMER:</strong> Questo simulatore è fornito a scopo puramente informativo ed educativo. I dati storici non sono indicativi dei rendimenti futuri. Investire in strumenti finanziari comporta un rischio di perdita del capitale. Le simulazioni non tengono conto di costi di transazione, fiscalità, inflazione o altri oneri. Si raccomanda di consultare un consulente finanziario professionista prima di prendere qualsiasi decisione di investimento.</p>
             <p><strong>📊 Fonte dati:</strong> Rendimenti storici MSCI World EUR (1979-2026). I rendimenti sono calcolati al lordo di commissioni e tasse.</p>
             <p><strong>⚡ Nota sui calcoli:</strong> La parte garantita utilizza un tasso del 2% annuo composto. I rendimenti MSCI World sono basati su dati mensili storici.</p>
+            <p><strong>🔄 Analisi rolling:</strong> Il simulatore calcola automaticamente tutti i possibili periodi di investimento dalla durata selezionata, mostrando la variabilità dei rendimenti a seconda del momento di ingresso.</p>
             <div class="credit">
                 <strong>✍️ Credit: Luigi Mauri</strong> - Simulatore finanziario interattivo
             </div>
@@ -983,7 +947,6 @@
         });
 
         // Event listeners
-        document.getElementById('startDate').addEventListener('change', updateSimulation);
         document.getElementById('duration').addEventListener('input', updateSimulation);
         document.getElementById('investmentType').addEventListener('change', updateSimulation);
         document.getElementById('displayType').addEventListener('change', updateSimulation);
