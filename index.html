@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulatore PAC Rolling - MSCI World</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.98);
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 25px;
+        }
+        h1 {
+            color: #2c3e50;
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-size: 2em;
+            border-bottom: 4px solid #667eea;
+            padding-bottom: 15px;
+        }
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .control-group label {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.9em;
+        }
+        .control-group input, .control-group select {
+            padding: 8px 12px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 0.95em;
+            background: white;
+            transition: all 0.2s;
+        }
+        .control-group input:focus, .control-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .allocation-group {
+            grid-column: span 2;
+            background: #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 5px;
+        }
+        .allocation-sliders {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        .slider-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .slider-value {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 1.1em;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .stat-card.highlight {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        }
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        .stat-label {
+            font-size: 0.8em;
+            opacity: 0.9;
+        }
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #e1e8ed;
+            height: 500px;
+            position: relative;
+        }
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            max-height: 450px;
+            overflow-y: auto;
+            border: 1px solid #e1e8ed;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85em;
+        }
+        th {
+            background: #667eea;
+            color: white;
+            padding: 10px;
+            position: sticky;
+            top: 0;
+            font-weight: 500;
+        }
+        td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #e1e8ed;
+        }
+        .positive {
+            color: #27ae60;
+            font-weight: 600;
+        }
+        .negative {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+        .tab-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .tab-button {
+            padding: 8px 16px;
+            background: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+        .tab-button.active {
+            background: #667eea;
+            color: white;
+            transform: scale(1.02);
+        }
+        .tab-content {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .tab-content.active {
+            display: block;
+            opacity: 1;
+        }
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .comparison-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        .comparison-card h3 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+        .comparison-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #667eea;
+        }
+        .legend-box {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            border-radius: 4px;
+            vertical-align: middle;
+        }
+        .chart-legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            flex-wrap: wrap;
+        }
+        .info-badge {
+            background: #667eea;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .note {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 SIMULATORE PAC ROLLING - MSCI WORLD</h1>
+        
+        <div class="controls-grid">
+            <div class="control-group">
+                <label>📅 Data Inizio</label>
+                <select id="startDate">
+                    <option value="0">Gen 1979</option>
+                    <option value="12">Gen 1980</option>
+                    <option value="24">Gen 1981</option>
+                    <option value="36">Gen 1982</option>
+                    <option value="48">Gen 1983</option>
+                    <option value="60">Gen 1984</option>
+                    <option value="72">Gen 1985</option>
+                    <option value="84">Gen 1986</option>
+                    <option value="96">Gen 1987</option>
+                    <option value="108">Gen 1988</option>
+                    <option value="120">Gen 1989</option>
+                    <option value="132">Gen 1990</option>
+                    <option value="144">Gen 1991</option>
+                    <option value="156">Gen 1992</option>
+                    <option value="168">Gen 1993</option>
+                    <option value="180">Gen 1994</option>
+                    <option value="192">Gen 1995</option>
+                    <option value="204">Gen 1996</option>
+                    <option value="216">Gen 1997</option>
+                    <option value="228">Gen 1998</option>
+                    <option value="240">Gen 1999</option>
+                    <option value="252">Gen 2000</option>
+                    <option value="264">Gen 2001</option>
+                    <option value="276">Gen 2002</option>
+                    <option value="288">Gen 2003</option>
+                    <option value="300">Gen 2004</option>
+                    <option value="312">Gen 2005</option>
+                    <option value="324">Gen 2006</option>
+                    <option value="336">Gen 2007</option>
+                    <option value="348">Gen 2008</option>
+                    <option value="360">Gen 2009</option>
+                    <option value="372">Gen 2010</option>
+                    <option value="384">Gen 2011</option>
+                    <option value="396">Gen 2012</option>
+                    <option value="408">Gen 2013</option>
+                    <option value="420">Gen 2014</option>
+                    <option value="432">Gen 2015</option>
+                    <option value="444">Gen 2016</option>
+                    <option value="456">Gen 2017</option>
+                    <option value="468">Gen 2018</option>
+                    <option value="480">Gen 2019</option>
+                    <option value="492">Gen 2020</option>
+                    <option value="504">Gen 2021</option>
+                    <option value="516">Gen 2022</option>
+                    <option value="528">Gen 2023</option>
+                    <option value="540">Gen 2024</option>
+                    <option value="552">Gen 2025</option>
+                    <option value="564">Gen 2026</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label>⏱️ Durata: <span id="durationValue">5</span> anni</label>
+                <input type="range" id="duration" min="1" max="20" value="5" step="0.5">
+            </div>
+            
+            <div class="control-group">
+                <label>💰 Tipo</label>
+                <select id="investmentType">
+                    <option value="lump">Unico (€30k)</option>
+                    <option value="pac" selected>PAC (€500/mese)</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label>📊 Mostra</label>
+                <select id="displayType">
+                    <option value="all">Tutti</option>
+                    <option value="best">Top 10</option>
+                    <option value="worst">Flop 10</option>
+                </select>
+            </div>
+
+            <!-- Allocazione personalizzata -->
+            <div class="allocation-group">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <label style="font-weight: 600; color: #2c3e50;">📊 Allocazione Investimento</label>
+                    <span class="info-badge">Garantito 2% composto annuo</span>
+                </div>
+                <div class="allocation-sliders">
+                    <div class="slider-item">
+                        <div style="display: flex; justify-content: space-between;">
+                            <label>% Capitale Garantito (2%)</label>
+                            <span class="slider-value" id="guaranteedPctValue">0%</span>
+                        </div>
+                        <input type="range" id="guaranteedPct" min="0" max="100" value="0" step="5">
+                    </div>
+                    <div class="slider-item">
+                        <div style="display: flex; justify-content: space-between;">
+                            <label>% MSCI World</label>
+                            <span class="slider-value" id="msciPctValue">100%</span>
+                        </div>
+                        <input type="range" id="msciPct" min="0" max="100" value="100" step="5">
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 10px; font-size: 0.9em; color: #666;" id="allocationDescription">
+                    100% MSCI World | 0% Garantito
+                </div>
+            </div>
+        </div>
+
+        <div class="note">
+            <strong>✏️ Nota:</strong> Il rendimento garantito del 2% è calcolato come <strong>interesse composto annuo</strong> (capitalizzazione annuale)
+        </div>
+
+        <div class="stats-grid" id="stats"></div>
+
+        <div class="tab-buttons">
+            <button class="tab-button active" data-tab="simulazioni">📋 Simulazioni</button>
+            <button class="tab-button" data-tab="grafico">📈 Grafico</button>
+            <button class="tab-button" data-tab="confronto">🔄 Confronto</button>
+        </div>
+
+        <div id="simulazioniTab" class="tab-content active">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Periodo</th>
+                            <th>Investito</th>
+                            <th>Finale</th>
+                            <th>Plusvalenza</th>
+                            <th>Rend.% Periodo</th>
+                            <th>Rend.% Annuo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="graficoTab" class="tab-content">
+            <div class="chart-container">
+                <canvas id="bundleChart"></canvas>
+                <div class="chart-legend">
+                    <div>
+                        <span class="legend-box" style="background: rgba(102, 126, 234, 0.3);"></span>
+                        <span>Simulazioni (<span id="simCount">0</span> percorsi)</span>
+                    </div>
+                    <div>
+                        <span class="legend-box" style="background: #e74c3c; border: 2px solid #c0392b;"></span>
+                        <span>Linea Versamenti</span>
+                    </div>
+                    <div>
+                        <span class="legend-box" style="background: #f39c12;"></span>
+                        <span>Media percorsi</span>
+                    </div>
+                    <div>
+                        <span class="legend-box" style="background: #27ae60;"></span>
+                        <span>Garantito 2% (composto)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="confrontoTab" class="tab-content">
+            <div class="comparison-grid">
+                <div class="comparison-card">
+                    <h3>📊 Versamento Unico</h3>
+                    <div class="comparison-value" id="lumpAvg">0%</div>
+                    <div>Media Rendimento Annuo</div>
+                    <div style="margin-top: 8px; color: #27ae60;" id="lumpBest">Miglior: 0%</div>
+                    <div style="color: #e74c3c;" id="lumpWorst">Peggior: 0%</div>
+                </div>
+                <div class="comparison-card">
+                    <h3>📈 PAC Mensile</h3>
+                    <div class="comparison-value" id="pacAvg">0%</div>
+                    <div>Media Rendimento Annuo</div>
+                    <div style="margin-top: 8px; color: #27ae60;" id="pacBest">Miglior: 0%</div>
+                    <div style="color: #e74c3c;" id="pacWorst">Peggior: 0%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Dati storici MSCI World (rendimenti mensili 1979-2026)
+        const RETURNS = [
+            3.99, -1.44, 4.16, 0.97, -0.65, 1.69, -2.86, 4.33, 1.14, -7.04, 2.66, 0.37,
+            4.97, 0.97, -6.03, 7.82, 0.38, 3.25, 1.79, 3.97, 2.75, 5.50, 7.83, 0.90,
+            -2.62, 7.12, 3.62, 2.70, 4.03, 3.64, 1.30, 0.68, -11.72, 0.00, 6.27, -0.78,
+            0.03, -2.93, -0.96, 6.52, -5.86, 1.01, 0.82, 7.90, 1.39, 8.13, 7.05, 0.18,
+            1.40, 3.96, 4.03, 8.67, -0.37, 6.29, -0.46, 3.79, 2.08, -2.81, 5.31, 3.84,
+            3.08, -4.68, 0.97, 1.39, -4.07, 0.83, 0.11, 11.26, 4.32, 2.90, -2.99, 6.11,
+            8.08, 3.92, 3.69, -7.19, 5.86, 0.00, -2.93, -2.65, 2.36, -1.11, 3.53, 2.20,
+            -0.63, 4.71, 6.73, 3.28, -2.04, 4.42, -2.16, 5.46, -4.74, -2.82, 5.29, 0.53,
+            5.03, 1.46, 6.01, 4.48, -1.08, 1.72, 3.46, 6.74, -4.31, -17.59, -8.34, 1.14,
+            3.50, 8.84, 1.61, 0.64, -1.05, 3.55, 6.99, -3.40, 3.46, 4.00, -0.64, 0.99,
+            7.70, 0.58, 0.00, 2.85, 1.71, 0.63, 6.42, -0.93, 4.38, -7.00, 2.48, -1.06,
+            -7.49, -5.58, -4.42, -2.73, 8.70, -0.07, -2.16, -13.38, -10.43, 6.09, -3.62, 3.26,
+            3.88, 7.41, 5.60, 6.12, 3.60, -2.70, 4.82, -2.54, -0.24, 1.46, -7.96, 3.84,
+            -1.19, 0.41, -2.20, 0.45, 1.96, -6.15, -4.54, -0.18, 1.34, 1.31, 8.42, 0.71,
+            2.26, 4.89, 6.29, 1.05, 2.53, 2.03, 6.36, 5.36, -5.77, 3.94, -3.15, 4.82,
+            8.02, -1.70, -6.31, 3.37, -1.92, -1.92, -1.26, 3.11, -3.69, 0.86, -2.94, 3.01,
+            -3.54, 0.32, 0.72, 1.48, 2.39, -0.89, 3.76, 0.71, 4.21, -3.13, 3.67, 4.53,
+            3.02, 1.17, 1.58, 3.20, 1.28, -0.29, -5.02, 0.21, 4.79, 0.99, 4.23, 0.56,
+            3.94, 5.54, -0.86, 3.81, 5.83, 6.15, 7.50, -4.04, 2.65, -7.00, -0.34, 3.93,
+            5.13, 6.51, 4.59, 0.28, -2.77, 3.10, 0.06, -13.71, -3.00, 5.00, 9.00, 4.20,
+            5.51, 0.56, 6.82, 5.35, -2.37, 5.95, -3.72, 0.95, -1.84, 7.32, 6.42, 8.63,
+            -3.28, 1.05, 8.70, 0.69, -4.83, 0.62, 0.46, 7.15, -3.81, 2.38, -8.97, -5.18,
+            2.06, -8.02, -2.18, 6.84, 3.31, -3.15, -4.44, -9.00, -8.56, 2.91, 7.61, 1.59,
+            -1.06, -1.04, 3.53, -6.45, -3.88, -11.62, -6.64, -0.34, -11.25, 7.33, 4.71, -9.94,
+            -6.00, -1.44, -1.36, 6.55, -0.48, 5.23, 3.00, 5.80, -5.66, 6.20, -1.64, 0.91,
+            3.62, 1.40, 0.91, 0.22, -1.17, 2.41, -2.33, -0.16, -0.56, -0.19, 0.84, 1.33,
+            2.14, 1.44, 0.28, -2.13, 6.94, 2.86, 3.48, -0.11, 3.93, -2.27, 5.56, 1.97,
+            1.70, 1.89, 0.27, -0.52, -5.90, 1.19, 0.20, 1.93, 2.72, 3.38, -1.46, 2.27,
+            2.87, -2.46, 1.01, 2.21, 3.96, -1.15, -3.66, -0.06, 1.25, 1.16, -6.13, -1.02,
+            -8.57, -2.53, -5.00, 7.10, 1.73, -9.47, -1.49, 4.46, -9.23, -9.14, -6.25, -5.62,
+            -0.92, -9.02, 2.17, 11.49, 2.69, -0.70, 8.44, 3.15, 1.35, -2.82, 2.54, 6.16,
+            -1.11, 4.37, 6.91, 1.25, -2.17, -3.14, 1.83, -1.09, 1.57, 2.16, 4.31, 4.43,
+            -0.21, 2.44, -3.59, -0.33, 1.16, -2.04, -0.48, -8.27, -2.23, 6.42, 1.80, 3.64,
+            3.13, 2.80, 1.95, -0.07, -2.66, 3.53, 3.81, -0.12, 0.21, -1.16, 1.34, 0.27,
+            2.33, 3.38, 4.93, 1.04, 0.55, -3.02, 3.72, -1.83, 2.90, 2.88, 2.00, 0.78,
+            -1.74, 2.75, 0.33, 0.57, 3.79, 1.41, 0.46, 3.68, 1.96, 1.12, 2.34, 1.16,
+            5.45, 6.47, 2.84, -1.82, 2.59, -4.24, 3.86, -8.68, -3.59, 9.74, 3.62, -4.54,
+            -6.27, -0.45, 2.12, 1.42, 2.81, -0.66, 4.12, -0.09, 0.27, -0.01, 4.40, 3.31,
+            0.38, 4.31, 0.18, -0.74, -0.53, -1.30, -0.36, -0.69, 2.41, 3.36, 0.35, 0.14,
+            1.36, -2.24, -3.03, 3.18, 3.89, 0.30, 2.44, 1.98, 1.21, -5.23, 0.77, -8.34,
+            7.42, 3.66, 2.95, 3.70, -5.20, 4.45, 2.56, -1.02, 3.51, 0.11, 4.40, 0.69,
+            1.03, -7.83, -13.06, 11.74, 2.38, 2.08, -0.96, 5.86, -1.54, -2.98, 10.13, 1.77,
+            0.11, 2.69, 6.82, 1.56, 0.45, 4.20, 1.73, 2.98, -2.04, 5.06, 0.24, 4.61,
+            -3.85, -2.90, 3.65, -3.43, -1.54, -5.80, 9.94, -2.28, -6.95, 5.38, 2.19, -6.85,
+            5.43, -0.44, 0.66, 0.77, 1.76, 4.26, 1.89, -1.00, -1.84, -3.13, 6.25, 3.78,
+            3.19, 4.35, 3.36, -2.88, 3.18, 3.43, 0.61, 0.25, 0.84, 0.84, 7.75, -0.95,
+            3.49, -0.89, -8.02, -4.06, 6.24, 0.92, 3.71, 0.74, 2.48, 3.65, 0.18, -0.77,
+            0.79
+        ];
+
+        // Cache
+        let cache = new Map();
+        let bundleChart = null;
+        let animationFrame = null;
+
+        // Sincronizza slider allocazione
+        function updateAllocation() {
+            const guaranteed = parseInt(document.getElementById('guaranteedPct').value);
+            const msci = 100 - guaranteed;
+            
+            document.getElementById('msciPct').value = msci;
+            document.getElementById('guaranteedPctValue').innerText = guaranteed + '%';
+            document.getElementById('msciPctValue').innerText = msci + '%';
+            document.getElementById('allocationDescription').innerHTML = 
+                `${msci}% MSCI World | ${guaranteed}% Garantito 2% (composto annuo)`;
+            
+            updateSimulation();
+        }
+
+        document.getElementById('guaranteedPct').addEventListener('input', updateAllocation);
+        document.getElementById('msciPct').addEventListener('input', function() {
+            const msci = parseInt(this.value);
+            const guaranteed = 100 - msci;
+            document.getElementById('guaranteedPct').value = guaranteed;
+            updateAllocation();
+        });
+
+        // Calcola rendimento per un singolo periodo - VERSIONE INTERESSE COMPOSTO
+        function calculateReturn(startIdx, months, type) {
+            const cacheKey = `${startIdx}-${months}-${type}-${document.getElementById('guaranteedPct').value}`;
+            if (cache.has(cacheKey)) return cache.get(cacheKey);
+            
+            const guaranteedPct = parseInt(document.getElementById('guaranteedPct').value) / 100;
+            const msciPct = 1 - guaranteedPct;
+            
+            let value;
+            let totalInvested;
+            const years = months / 12;
+            
+            if (type === 'lump') {
+                const lumpAmount = 30000;
+                const guaranteedPart = lumpAmount * guaranteedPct;
+                const msciPart = lumpAmount * msciPct;
+                
+                // PARTE GARANTITA - INTERESSE COMPOSTO ANNUO
+                // Formula: Capitale × (1 + tasso)^anni
+                const guaranteedValue = guaranteedPart * Math.pow(1 + 0.02, years);
+                
+                // Parte MSCI World
+                let msciValue = msciPart;
+                for (let i = 0; i < months; i++) {
+                    msciValue *= (1 + RETURNS[startIdx + i] / 100);
+                }
+                
+                value = guaranteedValue + msciValue;
+                totalInvested = lumpAmount;
+            } else {
+                const monthlyAmount = 500;
+                const guaranteedMonthly = monthlyAmount * guaranteedPct;
+                const msciMonthly = monthlyAmount * msciPct;
+                
+                // PARTE GARANTITA - INTERESSE COMPOSTO per PAC
+                // Ogni versamento mensile cresce con interesse composto per il tempo rimanente
+                let guaranteedValue = 0;
+                for (let i = 0; i < months; i++) {
+                    const monthsRemaining = months - i - 1;
+                    const yearsRemaining = monthsRemaining / 12;
+                    // Il versamento del mese i resta investito per yearsRemaining anni
+                    guaranteedValue += guaranteedMonthly * Math.pow(1 + 0.02, yearsRemaining);
+                }
+                
+                // Parte MSCI World
+                let msciValue = 0;
+                for (let i = 0; i < months; i++) {
+                    msciValue = (msciValue + msciMonthly) * (1 + RETURNS[startIdx + i] / 100);
+                }
+                
+                value = guaranteedValue + msciValue;
+                totalInvested = monthlyAmount * months;
+            }
+            
+            const result = { value, totalInvested };
+            cache.set(cacheKey, result);
+            return result;
+        }
+
+        // Calcola tutti i periodi rolling
+        function calculateAllPeriods() {
+            const duration = parseFloat(document.getElementById('duration').value);
+            const type = document.getElementById('investmentType').value;
+            const months = duration * 12;
+            
+            const periods = [];
+            const maxStart = RETURNS.length - months;
+            
+            for (let start = 0; start < maxStart; start++) {
+                const result = calculateReturn(start, months, type);
+                const finalValue = result.value;
+                const invested = result.totalInvested;
+                const gain = finalValue - invested;
+                const gainPct = (gain/invested)*100;
+                const annualReturn = (Math.pow(finalValue/invested, 1/duration) - 1) * 100;
+                
+                periods.push({
+                    startIdx: start,
+                    startDate: new Date(1979, start, 1),
+                    invested,
+                    finalValue,
+                    gain,
+                    gainPct,
+                    annualReturn,
+                    periodReturn: gainPct
+                });
+            }
+            
+            return periods;
+        }
+
+        // Calcola un percorso per il grafico - VERSIONE INTERESSE COMPOSTO
+        function calculatePath(startIdx, months, type) {
+            const guaranteedPct = parseInt(document.getElementById('guaranteedPct').value) / 100;
+            const msciPct = 1 - guaranteedPct;
+            
+            const path = [];
+            
+            if (type === 'lump') {
+                const lumpAmount = 30000;
+                const guaranteedPart = lumpAmount * guaranteedPct;
+                const msciPart = lumpAmount * msciPct;
+                
+                // Valore iniziale
+                path.push(guaranteedPart + msciPart);
+                
+                let msciValue = msciPart;
+                
+                for (let i = 0; i < months; i++) {
+                    msciValue *= (1 + RETURNS[startIdx + i] / 100);
+                    
+                    if (i % 3 === 2) {
+                        const yearsPassed = (i + 1) / 12;
+                        const guaranteedCurrent = guaranteedPart * Math.pow(1 + 0.02, yearsPassed);
+                        path.push(guaranteedCurrent + msciValue);
+                    }
+                }
+            } else {
+                const monthlyAmount = 500;
+                const guaranteedMonthly = monthlyAmount * guaranteedPct;
+                const msciMonthly = monthlyAmount * msciPct;
+                
+                path.push(0);
+                
+                let msciValue = 0;
+                
+                for (let i = 0; i < months; i++) {
+                    msciValue = (msciValue + msciMonthly) * (1 + RETURNS[startIdx + i] / 100);
+                    
+                    if (i % 3 === 2) {
+                        // Calcola parte garantita cumulata con interesse composto
+                        let guaranteedCurrent = 0;
+                        for (let j = 0; j <= i; j++) {
+                            const monthsRemaining = i - j;
+                            const yearsRemaining = monthsRemaining / 12;
+                            guaranteedCurrent += guaranteedMonthly * Math.pow(1 + 0.02, yearsRemaining);
+                        }
+                        path.push(guaranteedCurrent + msciValue);
+                    }
+                }
+            }
+            
+            return path;
+        }
+
+        // Calcola linea versamenti
+        function calculateContributionLine(months, type) {
+            const line = [];
+            
+            if (type === 'lump') {
+                for (let i = 0; i <= Math.floor(months/3); i++) {
+                    line.push(30000);
+                }
+            } else {
+                let total = 0;
+                for (let i = 0; i <= Math.floor(months/3); i++) {
+                    line.push(total);
+                    total += 1500; // 500 * 3 mesi
+                }
+            }
+            
+            return line;
+        }
+
+        // Calcola linea garantita - VERSIONE INTERESSE COMPOSTO
+        function calculateGuaranteedLine(startIdx, months, type) {
+            const guaranteedPct = parseInt(document.getElementById('guaranteedPct').value) / 100;
+            if (guaranteedPct === 0) return [];
+            
+            const line = [];
+            
+            if (type === 'lump') {
+                const lumpAmount = 30000 * guaranteedPct;
+                line.push(lumpAmount);
+                
+                for (let i = 0; i < months; i++) {
+                    if (i % 3 === 2) {
+                        const yearsPassed = (i + 1) / 12;
+                        const value = lumpAmount * Math.pow(1 + 0.02, yearsPassed);
+                        line.push(value);
+                    }
+                }
+            } else {
+                const monthlyAmount = 500 * guaranteedPct;
+                line.push(0);
+                
+                for (let i = 0; i < months; i++) {
+                    if (i % 3 === 2) {
+                        let value = 0;
+                        for (let j = 0; j <= i; j++) {
+                            const monthsRemaining = i - j;
+                            const yearsRemaining = monthsRemaining / 12;
+                            value += monthlyAmount * Math.pow(1 + 0.02, yearsRemaining);
+                        }
+                        line.push(value);
+                    }
+                }
+            }
+            
+            return line;
+        }
+
+        // Aggiorna tutte le visualizzazioni
+        function updateSimulation() {
+            document.getElementById('durationValue').innerText = 
+                document.getElementById('duration').value;
+            
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
+            }
+            
+            animationFrame = requestAnimationFrame(() => {
+                console.log('Calcolo simulazioni...');
+                const periods = calculateAllPeriods();
+                console.log(`Trovati ${periods.length} periodi`);
+                updateStats(periods);
+                updateTable(periods);
+                updateBundleChart();
+                updateComparison();
+                animationFrame = null;
+            });
+        }
+
+        function updateStats(periods) {
+            if (periods.length === 0) return;
+            
+            const returns = periods.map(p => p.annualReturn);
+            const periodReturns = periods.map(p => p.periodReturn);
+            
+            const avg = (returns.reduce((a,b) => a + b, 0) / returns.length).toFixed(2);
+            const avgPeriod = (periodReturns.reduce((a,b) => a + b, 0) / periodReturns.length).toFixed(2);
+            const max = Math.max(...returns).toFixed(2);
+            const min = Math.min(...returns).toFixed(2);
+            const positive = (returns.filter(r => r > 0).length / returns.length * 100).toFixed(1);
+            
+            document.getElementById('stats').innerHTML = `
+                <div class="stat-card"><div class="stat-label">Media Annua</div><div class="stat-value">${avg}%</div></div>
+                <div class="stat-card"><div class="stat-label">Media Periodo</div><div class="stat-value">${avgPeriod}%</div></div>
+                <div class="stat-card"><div class="stat-label">Miglior</div><div class="stat-value">${max}%</div></div>
+                <div class="stat-card"><div class="stat-label">Peggior</div><div class="stat-value">${min}%</div></div>
+                <div class="stat-card highlight"><div class="stat-label">Simulazioni</div><div class="stat-value">${periods.length}</div></div>
+                <div class="stat-card"><div class="stat-label">Positivi</div><div class="stat-value">${positive}%</div></div>
+            `;
+            
+            document.getElementById('simCount').innerText = periods.length;
+        }
+
+        function updateTable(periods) {
+            const displayType = document.getElementById('displayType').value;
+            let filtered = [...periods];
+            
+            if (displayType === 'best') {
+                filtered = periods.sort((a,b) => b.annualReturn - a.annualReturn).slice(0, 10);
+            } else if (displayType === 'worst') {
+                filtered = periods.sort((a,b) => a.annualReturn - b.annualReturn).slice(0, 10);
+            } else {
+                filtered = periods.slice(0, 20);
+            }
+            
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = filtered.map(p => {
+                const startDate = p.startDate.toLocaleDateString('it-IT', { month: 'short', year: 'numeric' });
+                const endDate = new Date(1979, p.startIdx + parseFloat(document.getElementById('duration').value) * 12, 1)
+                    .toLocaleDateString('it-IT', { month: 'short', year: 'numeric' });
+                
+                return `<tr>
+                    <td>${startDate} - ${endDate}</td>
+                    <td>€${Math.round(p.invested).toLocaleString()}</td>
+                    <td>€${Math.round(p.finalValue).toLocaleString()}</td>
+                    <td class="${p.gain >= 0 ? 'positive' : 'negative'}">
+                        €${Math.round(p.gain).toLocaleString()} (${p.gainPct.toFixed(1)}%)
+                    </td>
+                    <td class="${p.periodReturn >= 0 ? 'positive' : 'negative'}">${p.periodReturn.toFixed(2)}%</td>
+                    <td class="${p.annualReturn >= 0 ? 'positive' : 'negative'}">${p.annualReturn.toFixed(2)}%</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function updateBundleChart() {
+            const duration = parseFloat(document.getElementById('duration').value);
+            const type = document.getElementById('investmentType').value;
+            const months = duration * 12;
+            
+            const paths = [];
+            const maxStart = RETURNS.length - months;
+            const step = Math.max(1, Math.floor(maxStart / 50));
+            
+            const allValues = [];
+            
+            for (let start = 0; start < maxStart; start += step) {
+                const path = calculatePath(start, months, type);
+                paths.push(path);
+                
+                path.forEach((val, idx) => {
+                    if (!allValues[idx]) allValues[idx] = [];
+                    if (val > 0) allValues[idx].push(val);
+                });
+            }
+            
+            const averagePath = allValues.map(arr => 
+                arr.length ? arr.reduce((a,b) => a + b, 0) / arr.length : 0
+            );
+            
+            const contributionLine = calculateContributionLine(months, type);
+            const guaranteedLine = calculateGuaranteedLine(0, months, type);
+            
+            const labels = Array.from({length: paths[0]?.length || 0}, (_, i) => {
+                const year = (i * 3 / 12).toFixed(1);
+                return `${year} anni`;
+            });
+            
+            if (bundleChart) bundleChart.destroy();
+            
+            const datasets = paths.map(path => ({
+                data: path,
+                borderColor: `rgba(102, 126, 234, 0.15)`,
+                borderWidth: 0.8,
+                pointRadius: 0,
+                tension: 0.1
+            }));
+            
+            datasets.push({
+                label: 'Media percorsi',
+                data: averagePath,
+                borderColor: '#f39c12',
+                borderWidth: 3,
+                pointRadius: 0,
+                tension: 0.1
+            });
+            
+            datasets.push({
+                label: 'Capitale Versato',
+                data: contributionLine,
+                borderColor: '#e74c3c',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                pointRadius: 0,
+                tension: 0
+            });
+            
+            if (guaranteedLine.length > 0) {
+                datasets.push({
+                    label: 'Garantito 2%',
+                    data: guaranteedLine,
+                    borderColor: '#27ae60',
+                    borderWidth: 2,
+                    borderDash: [2, 2],
+                    pointRadius: 0,
+                    tension: 0
+                });
+            }
+            
+            bundleChart = new Chart(document.getElementById('bundleChart'), {
+                type: 'line',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: 0 },
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    },
+                    elements: { line: { borderWidth: 0.8 } }
+                }
+            });
+        }
+
+        function updateComparison() {
+            setTimeout(() => {
+                const lump = [], pac = [];
+                const maxStart = RETURNS.length - 60;
+                
+                for (let start = 0; start < maxStart; start += 12) {
+                    const resultLump = calculateReturn(start, 60, 'lump');
+                    lump.push((Math.pow(resultLump.value/resultLump.totalInvested, 1/5) - 1) * 100);
+                    
+                    const resultPac = calculateReturn(start, 60, 'pac');
+                    pac.push((Math.pow(resultPac.value/resultPac.totalInvested, 1/5) - 1) * 100);
+                }
+                
+                document.getElementById('lumpAvg').innerText = (lump.reduce((a,b) => a + b, 0) / lump.length).toFixed(2) + '%';
+                document.getElementById('lumpBest').innerHTML = `📈 ${Math.max(...lump).toFixed(2)}%`;
+                document.getElementById('lumpWorst').innerHTML = `📉 ${Math.min(...lump).toFixed(2)}%`;
+                
+                document.getElementById('pacAvg').innerText = (pac.reduce((a,b) => a + b, 0) / pac.length).toFixed(2) + '%';
+                document.getElementById('pacBest').innerHTML = `📈 ${Math.max(...pac).toFixed(2)}%`;
+                document.getElementById('pacWorst').innerHTML = `📉 ${Math.min(...pac).toFixed(2)}%`;
+                
+            }, 100);
+        }
+
+        // Tab switching
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab + 'Tab').classList.add('active');
+            });
+        });
+
+        // Event listeners
+        document.getElementById('startDate').addEventListener('change', updateSimulation);
+        document.getElementById('duration').addEventListener('input', updateSimulation);
+        document.getElementById('investmentType').addEventListener('change', updateSimulation);
+        document.getElementById('displayType').addEventListener('change', updateSimulation);
+
+        // Cleanup cache ogni 5 minuti
+        setInterval(() => {
+            cache.clear();
+            console.log('Cache pulita');
+        }, 300000);
+
+        // Inizializza
+        updateSimulation();
+    </script>
+</body>
+</html>
