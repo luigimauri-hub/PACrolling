@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Historical Market Risk Simulator</title>
+    <title>Historical Market Risk Simulator - MSCI World</title>
     <style>
         * {
             box-sizing: border-box;
@@ -396,7 +396,7 @@
 <body>
     <div class="container">
         <h1>📊 HISTORICAL MARKET RISK SIMULATOR </h1>
-        <div class="subtitle">Analisi della propensione al rischio attraverso dati storici (1979-2026)</div>
+        <div class="subtitle">Analisi della propensione al rischio attraverso dati storici dell'MSCI World Eur - Azionario Globale dal 1979 al 2026</div>
         
         <!-- GUIDA INTERATTIVA PER IL CLIENTE -->
         <div class="guide-container">
@@ -451,14 +451,14 @@
                     <h3>📊 Le 3 schede da esplorare</h3>
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px;">
                         <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; border-top: 4px solid #3498db;">
-                            <div style="font-size: 1.8em; margin-bottom: 8px;">📋</div>
-                            <div style="font-weight: 600;">Tabella Simulazioni</div>
-                            <div style="font-size: 0.85em; margin-top: 8px;">Mostra tutti i periodi storici. Usa "Top 10" per vedere i migliori e "Flop 10" per i peggiori.</div>
-                        </div>
-                        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; border-top: 4px solid #f39c12;">
                             <div style="font-size: 1.8em; margin-bottom: 8px;">📈</div>
                             <div style="font-weight: 600;">Grafico Andamenti</div>
                             <div style="font-size: 0.85em; margin-top: 8px;">Ogni linea azzurra è un investimento iniziato in un anno diverso. La linea arancione è la media.</div>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; border-top: 4px solid #f39c12;">
+                            <div style="font-size: 1.8em; margin-bottom: 8px;">📋</div>
+                            <div style="font-weight: 600;">Tabella Simulazioni</div>
+                            <div style="font-size: 0.85em; margin-top: 8px;">Mostra tutti i periodi storici. Usa "Top 10" per vedere i migliori e "Flop 10" per i peggiori.</div>
                         </div>
                         <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; border-top: 4px solid #27ae60;">
                             <div style="font-size: 1.8em; margin-bottom: 8px;">🔄</div>
@@ -597,30 +597,12 @@
         <div class="stats-grid" id="stats"></div>
 
         <div class="tab-buttons">
-            <button class="tab-button active" data-tab="simulazioni">📋 Tabella Simulazioni</button>
-            <button class="tab-button" data-tab="grafico">📈 Grafico Andamenti</button>
+            <button class="tab-button active" data-tab="grafico">📈 Grafico Andamenti</button>
+            <button class="tab-button" data-tab="simulazioni">📋 Tabella Simulazioni</button>
             <button class="tab-button" data-tab="confronto">🔄 Confronto Strategie</button>
         </div>
 
-        <div id="simulazioniTab" class="tab-content active">
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Periodo</th>
-                            <th>Investito</th>
-                            <th>Valore Finale</th>
-                            <th>Plusvalenza</th>
-                            <th>Rend.% Periodo</th>
-                            <th>Rend.% Annuo</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="graficoTab" class="tab-content">
+        <div id="graficoTab" class="tab-content active">
             <div class="chart-container">
                 <canvas id="bundleChart"></canvas>
                 <div class="chart-legend">
@@ -638,9 +620,27 @@
                     </div>
                     <div>
                         <span class="legend-box" style="background: #27ae60;"></span>
-                        <span>Garantito 2%</span>
+                        <span>Garantito 2% (riferimento)</span>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <div id="simulazioniTab" class="tab-content">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Periodo</th>
+                            <th>Investito</th>
+                            <th>Valore Finale</th>
+                            <th>Plusvalenza</th>
+                            <th>Rend.% Periodo</th>
+                            <th>Rend.% Annuo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
             </div>
         </div>
 
@@ -667,7 +667,7 @@
         <div class="footer">
             <p><strong>⚠️ DISCLAIMER:</strong> Il presente strumento è fornito a scopo puramente informativo ed educativo. I dati storici non sono indicativi dei rendimenti futuri. Investire in strumenti finanziari comporta un rischio di perdita del capitale. Le simulazioni non tengono conto di costi di transazione, fiscalità, inflazione o altri oneri. Si raccomanda di consultare un consulente finanziario professionista prima di prendere qualsiasi decisione di investimento.</p>
             <p><strong>📊 Fonte dati:</strong> Rendimenti storici MSCI World EUR (1979-2026). I rendimenti sono calcolati al lordo di commissioni e tasse.</p>
-            <p><strong>⚡ Nota:</strong> La componente garantita utilizza un tasso del 2% annuo composto a scopo illustrativo.</p>
+            <p><strong>⚡ Nota:</strong> La linea verde del grafico mostra l'andamento di un investimento interamente garantito al 2% annuo composto, fornito come riferimento indipendentemente dall'allocazione scelta.</p>
             <div class="credit">
                 <strong>✍️ Credit: Luigi Mauri</strong> - Historical Market Risk Simulator
             </div>
@@ -933,29 +933,25 @@
             return line;
         }
 
-        // Calcola linea garantita
-        function calculateGuaranteedLine(startIdx, months, type) {
-            const guaranteedPct = parseInt(document.getElementById('guaranteedPct').value) / 100;
-            if (guaranteedPct === 0) return [];
-            
+        // Calcola linea garantita (sempre visibile come riferimento)
+        function calculateReferenceGuaranteedLine(months, type) {
             const lumpAmount = parseFloat(document.getElementById('lumpAmount').value);
             const pacAmount = parseFloat(document.getElementById('pacAmount').value);
             
             const line = [];
             
             if (type === 'lump') {
-                const lumpAmountGuaranteed = lumpAmount * guaranteedPct;
-                line.push(lumpAmountGuaranteed);
+                // Investimento interamente garantito al 2% come riferimento
+                line.push(lumpAmount);
                 
                 for (let i = 0; i < months; i++) {
                     if (i % 3 === 2) {
                         const yearsPassed = (i + 1) / 12;
-                        const value = lumpAmountGuaranteed * Math.pow(1 + 0.02, yearsPassed);
+                        const value = lumpAmount * Math.pow(1 + 0.02, yearsPassed);
                         line.push(value);
                     }
                 }
             } else {
-                const monthlyAmount = pacAmount * guaranteedPct;
                 line.push(0);
                 
                 for (let i = 0; i < months; i++) {
@@ -964,7 +960,7 @@
                         for (let j = 0; j <= i; j++) {
                             const monthsRemaining = i - j;
                             const yearsRemaining = monthsRemaining / 12;
-                            value += monthlyAmount * Math.pow(1 + 0.02, yearsRemaining);
+                            value += pacAmount * Math.pow(1 + 0.02, yearsRemaining);
                         }
                         line.push(value);
                     }
@@ -1077,7 +1073,8 @@
             );
             
             const contributionLine = calculateContributionLine(months, type);
-            const guaranteedLine = calculateGuaranteedLine(0, months, type);
+            // Usa sempre la linea garantita di riferimento (100% garantito) indipendentemente dall'allocazione
+            const guaranteedLine = calculateReferenceGuaranteedLine(months, type);
             
             const labels = Array.from({length: paths[0]?.length || 0}, (_, i) => {
                 const year = (i * 3 / 12).toFixed(1);
@@ -1113,17 +1110,16 @@
                 tension: 0
             });
             
-            if (guaranteedLine.length > 0) {
-                datasets.push({
-                    label: 'Garantito 2%',
-                    data: guaranteedLine,
-                    borderColor: '#27ae60',
-                    borderWidth: 2,
-                    borderDash: [2, 2],
-                    pointRadius: 0,
-                    tension: 0
-                });
-            }
+            // Linea garantita sempre visibile come riferimento
+            datasets.push({
+                label: 'Garantito 2% (riferimento)',
+                data: guaranteedLine,
+                borderColor: '#27ae60',
+                borderWidth: 2,
+                borderDash: [2, 2],
+                pointRadius: 0,
+                tension: 0
+            });
             
             bundleChart = new Chart(document.getElementById('bundleChart'), {
                 type: 'line',
